@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sixty4Bit Dashboard - Protected</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .hidden { display: none !important; }
+        .login-screen { 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .password-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .login-btn:hover {
+            background: #4f46e5;
+        }
+        .error-message {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">
+                    🔐 Sixty4Bit Dashboard
+                </h1>
+                <p style="color: #6b7280;">Enter password to access</p>
+            </div>
+            
+            <form id="login-form">
+                <input type="password" id="password-input" class="password-input" 
+                       placeholder="Enter password" required>
+                <button type="submit" class="login-btn" style="margin-top: 1rem;">
+                    🔓 Access Dashboard
+                </button>
+            </form>
+            
+            <div id="error-message" class="error-message">
+                ❌ Wrong password! Try again.
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD (Hidden by default) -->
+    <div id="dashboard" class="hidden" style="min-height: 100vh; background: #f3f4f6; padding: 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937;">
+                        🚀 Sixty4Bit Dashboard
+                    </h1>
+                    <button onclick="logout()" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                        🚪 Logout
+                    </button>
+                </div>
+                
+                <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6;">
+                    <h2 style="font-size: 1.5rem; font-weight: bold; color: #1e40af; margin-bottom: 1rem;">
+                        🎉 Welcome! You're successfully logged in!
+                    </h2>
+                    <p style="color: #1e40af; line-height: 1.6;">
+                        This is your protected dashboard. Only you can see this content because you entered the correct password.
+                        <br><br>
+                        <strong>Password used:</strong> sneha14
+                        <br>
+                        <strong>Status:</strong> ✅ Authenticated
+                    </p>
+                </div>
+                
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #fef3c7; border-radius: 0.5rem; border-left: 4px solid #f59e0b;">
+                    <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 1rem;">
+                        📋 Next Steps:
+                    </h3>
+                    <ul style="color: #92400e; line-height: 1.6;">
+                        <li>✅ Password protection is working</li>
+                        <li>✅ Dashboard is secure</li>
+                        <li>✅ Only you can access this</li>
+                        <li>🔄 Now you can add your full dashboard content</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Password Protection
+        const CORRECT_PASSWORD = 'sneha14';
+        
+        // Check if already logged in
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            showDashboard();
+        }
+        
+        // Login form handler
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            
+            if (password === CORRECT_PASSWORD) {
+                localStorage.setItem('isLoggedIn', 'true');
+                showDashboard();
+                document.getElementById('error-message').style.display = 'none';
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('password-input').value = '';
+                document.getElementById('password-input').focus();
+            }
+        });
+        
+        function showDashboard() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+        
+        // Auto-focus password input
+        document.getElementById('password-input').focus();
+    </script>
+</body>
+</html>
