@@ -12,13 +12,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        .hidden { display: none !important; }
         .login-screen { 
             min-height: 100vh; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dashboard-content { 
+            display: none; 
+            min-height: 100vh; 
+            background: #f3f4f6; 
+            padding: 2rem; 
         }
         .login-card {
             background: white;
@@ -85,8 +90,8 @@
         </div>
     </div>
 
-    <!-- DASHBOARD (Hidden by default) -->
-    <div id="dashboard" class="hidden" style="min-height: 100vh; background: #f3f4f6; padding: 2rem;">
+    <!-- DASHBOARD CONTENT -->
+    <div id="dashboard-content" class="dashboard-content">
         <div style="max-width: 1200px; margin: 0 auto;">
             <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
@@ -139,6 +144,7 @@
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const password = document.getElementById('password-input').value;
+            console.log('Password entered:', password); // Debug log
             
             if (password === CORRECT_PASSWORD) {
                 localStorage.setItem('isLoggedIn', 'true');
@@ -152,8 +158,9 @@
         });
         
         function showDashboard() {
+            console.log('Showing dashboard...'); // Debug log
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('dashboard-content').style.display = 'block';
         }
         
         function logout() {
