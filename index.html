@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sixty4Bit Dashboard - Protected</title>
+    <title>Sixty4Bit Dashboard - Database Connected</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -22,8 +22,6 @@
         .dashboard-content { 
             display: none; 
             min-height: 100vh; 
-            background: #f3f4f6; 
-            padding: 2rem; 
         }
         .login-card {
             background: white;
@@ -62,6 +60,162 @@
             margin-top: 1rem;
             display: none;
         }
+        .hidden { display: none !important; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            color: #333;
+            border-left: 5px solid;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            transform: translateX(calc(100% + 20px));
+            transition: transform 0.5s ease-in-out;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success {
+            border-color: #28a745;
+        }
+        .toast.error {
+            border-color: #dc3545;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+        .btn-secondary {
+            background: #14b8a6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-secondary:hover {
+            background: #0d9488;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .table th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-radius: 50%;
+            border-top-color: #6366f1;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -92,84 +246,567 @@
 
     <!-- DASHBOARD CONTENT -->
     <div id="dashboard-content" class="dashboard-content">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 2rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="font-size: 1.5rem; font-weight: bold; color: #1f2937;">
+                🚀 Sixty4Bit Dashboard
+            </h1>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span id="db-status" style="padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; background: #fef3c7; color: #92400e;">
+                    🔄 Connecting...
+                </span>
+                <button onclick="logout()" class="btn-danger">
+                    🚪 Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav style="background: #f9fafb; padding: 1rem 2rem; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="showSection('dashboard')" class="btn-primary nav-btn active" data-section="dashboard">
+                    📊 Dashboard
+                </button>
+                <button onclick="showSection('clients')" class="btn-primary nav-btn" data-section="clients">
+                    👥 Clients
+                </button>
+                <button onclick="showSection('logs')" class="btn-primary nav-btn" data-section="logs">
+                    📝 Work Logs
+                </button>
+                <button onclick="showSection('cycles')" class="btn-primary nav-btn" data-section="cycles">
+                    💰 Paid Cycles
+                </button>
+                <button onclick="showSection('invoices')" class="btn-primary nav-btn" data-section="invoices">
+                    🧾 Invoices
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="section">
+                <h2 style="font-size: 2rem; font-weight: bold; margin-bottom: 2rem; color: #1f2937;">
+                    �� Dashboard Overview
+                </h2>
+                
+                <!-- Stats Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="card">
+                        <h3 style="font-size: 1.5rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">
+                            👥 Total Clients
+                        </h3>
+                        <p style="font-size: 2rem; font-weight: bold; color: #6366f1;" id="total-clients">0</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 1.5rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">
+                            📝 Total Work Logs
+                        </h3>
+                        <p style="font-size: 2rem; font-weight: bold; color: #14b8a6;" id="total-logs">0</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 1.5rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">
+                            💰 Total Revenue
+                        </h3>
+                        <p style="font-size: 2rem; font-weight: bold; color: #f59e0b;" id="total-revenue">₹0</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 1.5rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">
+                            🧾 Paid Cycles
+                        </h3>
+                        <p style="font-size: 2rem; font-weight: bold; color: #8b5cf6;" id="total-cycles">0</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card">
+                    <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #1f2937;">
+                        📈 Recent Activity
+                    </h3>
+                    <div id="recent-activity">
+                        <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                            Loading recent activity...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients Section -->
+            <div id="clients-section" class="section hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937;">
-                        🚀 Sixty4Bit Dashboard
-                    </h1>
-                    <button onclick="logout()" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
-                        🚪 Logout
+                    <h2 style="font-size: 2rem; font-weight: bold; color: #1f2937;">
+                        �� Client Management
+                    </h2>
+                    <button onclick="showModal('client-modal')" class="btn-primary">
+                        ➕ Add Client
                     </button>
                 </div>
                 
-                <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6;">
-                    <h2 style="font-size: 1.5rem; font-weight: bold; color: #1e40af; margin-bottom: 1rem;">
-                        🎉 Welcome! You're successfully logged in!
-                    </h2>
-                    <p style="color: #1e40af; line-height: 1.6;">
-                        This is your protected dashboard. Only you can see this content because you entered the correct password.
-                        <br><br>
-                        <strong>Password used:</strong> sneha14
-                        <br>
-                        <strong>Status:</strong> ✅ Authenticated
-                    </p>
-                </div>
-                
-                <div style="margin-top: 2rem; padding: 1.5rem; background: #fef3c7; border-radius: 0.5rem; border-left: 4px solid #f59e0b;">
-                    <h3 style="font-size: 1.25rem; font-weight: bold; color: #92400e; margin-bottom: 1rem;">
-                        📋 Next Steps:
-                    </h3>
-                    <ul style="color: #92400e; line-height: 1.6;">
-                        <li>✅ Password protection is working</li>
-                        <li>✅ Dashboard is secure</li>
-                        <li>✅ Only you can access this</li>
-                        <li>🔄 Now you can add your full dashboard content</li>
-                    </ul>
+                <div id="clients-list">
+                    <div class="loading">Loading clients...</div>
                 </div>
             </div>
+
+            <!-- Work Logs Section -->
+            <div id="logs-section" class="section hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="font-size: 2rem; font-weight: bold; color: #1f2937;">
+                        📝 Work Logs
+                    </h2>
+                    <button onclick="showModal('log-modal')" class="btn-primary">
+                        ➕ Add Work Log
+                    </button>
+                </div>
+                
+                <div id="logs-list">
+                    <div class="loading">Loading work logs...</div>
+                </div>
+            </div>
+
+            <!-- Paid Cycles Section -->
+            <div id="cycles-section" class="section hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="font-size: 2rem; font-weight: bold; color: #1f2937;">
+                        💰 Paid Cycles
+                    </h2>
+                    <button onclick="showModal('cycle-modal')" class="btn-primary">
+                        ➕ Create Cycle
+                    </button>
+                </div>
+                
+                <div id="cycles-list">
+                    <div class="loading">Loading paid cycles...</div>
+                </div>
+            </div>
+
+            <!-- Invoices Section -->
+            <div id="invoices-section" class="section hidden">
+                <h2 style="font-size: 2rem; font-weight: bold; margin-bottom: 2rem; color: #1f2937;">
+                    �� Invoice Management
+                </h2>
+                
+                <div id="invoices-list">
+                    <div class="loading">Loading invoices...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Client Modal -->
+    <div id="client-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #1f2937;">
+                Add New Client
+            </h3>
+            <form id="client-form">
+                <input type="text" id="client-name" class="input-field" placeholder="Client Name" required>
+                <input type="text" id="client-type" class="input-field" placeholder="Project Type (e.g., Website, Landing Page)" required>
+                <input type="url" id="client-domain" class="input-field" placeholder="Domain URL (optional)">
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="hideModal('client-modal')" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Save Client
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script>
-        // Simple Password Protection
-        const CORRECT_PASSWORD = 'sneha14';
-        
-        // Check if already logged in
-        if (localStorage.getItem('isLoggedIn') === 'true') {
-            showDashboard();
-        }
-        
-        // Login form handler
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const password = document.getElementById('password-input').value;
-            console.log('Password entered:', password); // Debug log
+    <!-- Work Log Modal -->
+    <div id="log-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #1f2937;">
+                Add Work Log
+            </h3>
+            <form id="log-form">
+                <select id="log-client" class="input-field" required>
+                    <option value="">Select Client</option>
+                </select>
+                <input type="text" id="log-task" class="input-field" placeholder="Task Description" required>
+                <input type="date" id="log-date" class="input-field" required>
+                <input type="number" id="log-amount" class="input-field" placeholder="Amount (₹)" step="0.01" required>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="hideModal('client-modal')" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Save Log
+                    </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cycle Modal -->
+        <div id="cycle-modal" class="modal">
+            <div class="modal-content">
+                <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #1f2937;">
+                    Create Paid Cycle
+                </h3>
+                <form id="cycle-form">
+                    <select id="cycle-client" class="input-field" required>
+                        <option value="">Select Client</option>
+                    </select>
+                    <div id="cycle-logs" style="margin-bottom: 1rem;">
+                        <h4 style="font-weight: bold; margin-bottom: 0.5rem;">Select Work Logs:</h4>
+                        <div id="cycle-logs-list">
+                            <!-- Work logs will be populated here -->
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" onclick="hideModal('cycle-modal')" class="btn-secondary">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            Create Cycle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toast-container"></div>
+
+        <script>
+            // Password Protection
+            const CORRECT_PASSWORD = 'sneha14';
             
-            if (password === CORRECT_PASSWORD) {
-                localStorage.setItem('isLoggedIn', 'true');
+            // Database API Configuration
+            const API_BASE = '/.netlify/functions/db';
+            
+            // Check if already logged in
+            if (localStorage.getItem('isLoggedIn') === 'true') {
                 showDashboard();
-                document.getElementById('error-message').style.display = 'none';
-            } else {
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('password-input').value = '';
-                document.getElementById('password-input').focus();
             }
-        });
-        
-        function showDashboard() {
-            console.log('Showing dashboard...'); // Debug log
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('dashboard-content').style.display = 'block';
-        }
-        
-        function logout() {
-            localStorage.removeItem('isLoggedIn');
-            location.reload();
-        }
-        
-        // Auto-focus password input
-        document.getElementById('password-input').focus();
-    </script>
-</body>
-</html>
+            
+            // Login form handler
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const password = document.getElementById('password-input').value;
+                
+                if (password === CORRECT_PASSWORD) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    showDashboard();
+                    document.getElementById('error-message').style.display = 'none';
+                } else {
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('password-input').value = '';
+                    document.getElementById('password-input').focus();
+                }
+            });
+            
+            function showDashboard() {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                loadData();
+                updateStats();
+            }
+            
+            function logout() {
+                localStorage.removeItem('isLoggedIn');
+                location.reload();
+            }
+            
+            // Auto-focus password input
+            document.getElementById('password-input').focus();
+
+            // Database API Functions
+            async function apiCall(endpoint, method = 'GET', data = null) {
+                try {
+                    const options = {
+                        method,
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    
+                    if (data && method !== 'GET') {
+                        options.body = JSON.stringify(data);
+                    }
+                    
+                    const response = await fetch(`${API_BASE}${endpoint}`, options);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('API call failed:', error);
+                    showToast(`Database error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+
+            // Data Management
+            let clients = [];
+            let logs = [];
+            let cycles = [];
+
+            async function loadData() {
+                try {
+                    updateDbStatus('🔄 Loading data...', 'warning');
+                    
+                    // Load all data from database
+                    const data = await apiCall('/all');
+                    clients = data.clients || [];
+                    logs = data.logs || [];
+                    cycles = data.cycles || [];
+                    
+                    // Render all sections
+                    renderClients();
+                    renderLogs();
+                    renderCycles();
+                    updateStats();
+                    updateRecentActivity();
+                    
+                    updateDbStatus('✅ Connected', 'success');
+                } catch (error) {
+                    updateDbStatus('❌ Connection failed', 'error');
+                    showToast('Failed to load data from database', 'error');
+                }
+            }
+
+            function updateDbStatus(message, type) {
+                const statusEl = document.getElementById('db-status');
+                statusEl.textContent = message;
+                
+                // Update styling based on type
+                statusEl.className = '';
+                statusEl.style.padding = '0.25rem 0.5rem';
+                statusEl.style.borderRadius = '0.25rem';
+                statusEl.style.fontSize = '0.75rem';
+                
+                if (type === 'success') {
+                    statusEl.style.background = '#d1fae5';
+                    statusEl.style.color = '#065f46';
+                } else if (type === 'warning') {
+                    statusEl.style.background = '#fef3c7';
+                    statusEl.style.color = '#92400e';
+                } else if (type === 'error') {
+                    statusEl.style.background = '#fee2e2';
+                    statusEl.style.color = '#991b1b';
+                }
+            }
+
+            function updateStats() {
+                document.getElementById('total-clients').textContent = clients.length;
+                document.getElementById('total-logs').textContent = logs.length;
+                document.getElementById('total-revenue').textContent = '₹' + logs.reduce((sum, log) => sum + (parseFloat(log.amount) || 0), 0).toFixed(2);
+                document.getElementById('total-cycles').textContent = cycles.length;
+            }
+
+            function updateRecentActivity() {
+                const container = document.getElementById('recent-activity');
+                const recentLogs = logs.slice(0, 5);
+                
+                if (recentLogs.length === 0) {
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No recent activity. Start by adding clients and work logs!</p>';
+                    return;
+                }
+                
+                container.innerHTML = recentLogs.map(log => {
+                    const client = clients.find(c => c.id === log.client_id);
+                    return `
+                        <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <p style="font-weight: bold; margin-bottom: 0.25rem;">${log.task_type}</p>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">Client: ${client ? client.name : 'Unknown'}</p>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">Date: ${new Date(log.date).toLocaleDateString()}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p style="font-weight: bold; color: #f59e0b;">₹${parseFloat(log.amount || 0).toFixed(2)}</p>
+                                    <span class="badge ${log.paid ? 'badge-success' : 'badge-warning'}">
+                                        ${log.paid ? 'Paid' : 'Unpaid'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Navigation
+            function showSection(sectionName) {
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                // Show selected section
+                document.getElementById(sectionName + '-section').classList.remove('hidden');
+                
+                // Update navigation buttons
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+            }
+
+            // Modal Management
+            function showModal(modalId) {
+                document.getElementById(modalId).classList.add('show');
+            }
+
+            function hideModal(modalId) {
+                document.getElementById(modalId).classList.remove('show');
+            }
+
+            // Client Management
+            async function renderClients() {
+                const container = document.getElementById('clients-list');
+                if (clients.length === 0) {
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No clients yet. Add your first client to get started!</p>';
+                    return;
+                }
+
+                container.innerHTML = clients.map(client => `
+                    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="font-weight: bold; margin-bottom: 0.5rem;">${client.name}</h4>
+                            <p style="color: #6b7280;">${client.type}</p>
+                            ${client.domain ? `<p style="color: #6366f1;"><a href="${client.domain}" target="_blank">${client.domain}</a></p>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="editClient('${client.id}')" class="btn-secondary">✏️</button>
+                            <button onclick="deleteClient('${client.id}')" class="btn-danger">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Work Log Management
+            async function renderLogs() {
+                const container = document.getElementById('logs-list');
+                if (logs.length === 0) {
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No work logs yet. Add your first work log to get started!</p>';
+                    return;
+                }
+
+                container.innerHTML = logs.map(log => {
+                    const client = clients.find(c => c.id === log.client_id);
+                    return `
+                        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="font-weight: bold; margin-bottom: 0.5rem;">${log.task_type}</h4>
+                                <p style="color: #6b7280;">Client: ${client ? client.name : 'Unknown'}</p>
+                                <p style="color: #6b7280;">Date: ${new Date(log.date).toLocaleDateString()}</p>
+                                <p style="font-weight: bold; color: #f59e0b;">₹${parseFloat(log.amount || 0).toFixed(2)}</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="editLog('${log.id}')" class="btn-secondary">✏️</button>
+                                <button onclick="deleteLog('${log.id}')" class="btn-danger">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Cycle Management
+            async function renderCycles() {
+                const container = document.getElementById('cycles-list');
+                if (cycles.length === 0) {
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No paid cycles yet. Create your first cycle to get started!</p>';
+                    return;
+                }
+
+                container.innerHTML = cycles.map(cycle => {
+                    const client = clients.find(c => c.id === cycle.client_id);
+                    return `
+                        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="font-weight: bold; margin-bottom: 0.5rem;">Cycle for ${client ? client.name : 'Unknown Client'}</h4>
+                                <p style="color: #6b7280;">Date: ${new Date(cycle.date).toLocaleDateString()}</p>
+                                <p style="font-weight: bold; color: #8b5cf6;">₹${parseFloat(cycle.total).toFixed(2)}</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="viewCycle('${cycle.id}')" class="btn-secondary">👁️</button>
+                                <button onclick="deleteCycle('${cycle.id}')" class="btn-danger">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Form Handlers
+            document.getElementById('client-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                try {
+                    const clientData = {
+                        name: document.getElementById('client-name').value,
+                        type: document.getElementById('client-type').value,
+                        domain: document.getElementById('client-domain').value
+                    };
+                    
+                    await apiCall('/clients', 'POST', clientData);
+                    showToast('Client added successfully!', 'success');
+                    hideModal('client-modal');
+                    this.reset();
+                    await loadData(); // Reload data from database
+                } catch (error) {
+                    showToast('Failed to add client', 'error');
+                }
+            });
+
+            document.getElementById('log-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                try {
+                    const logData = {
+                        clientId: document.getElementById('log-client').value,
+                        taskType: document.getElementById('log-task').value,
+                        date: document.getElementById('log-date').value,
+                        amount: parseFloat(document.getElementById('log-amount').value)
+                    };
+                    
+                    await apiCall('/logs', 'POST', logData);
+                    showToast('Work log added successfully!', 'success');
+                    hideModal('log-modal');
+                    this.reset();
+                    await loadData(); // Reload data from database
+                } catch (error) {
+                    showToast('Failed to add work log', 'error');
+                }
+            });
+
+            // Utility Functions
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.getElementById('toast-container').appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 100);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 500);
+                }, 3000);
+            }
+
+            // Initialize
+            document.addEventListener('DOMContentLoaded', function() {
+                // Populate client dropdowns
+                function updateClientDropdowns() {
+                    const clientOptions = clients.map(client => 
+                        `<option value="${client.id}">${client.name}</option>`
+                    ).join('');
+                    
+                    document.getElementById('log-client').innerHTML = 
+                        '<option value="">Select Client</option>' + clientOptions;
+                    document.getElementById('cycle-client').innerHTML = 
+                        '<option value="">Select Client</option>' + clientOptions;
+                }
+
+                // Update dropdowns when clients change
+                const originalLoadData = loadData;
+                loadData = async function() {
+                    await originalLoadData();
+                    updateClientDropdowns();
+                };
+
+                updateClientDropdowns();
+            });
+        </script>
+    </body>
+    </html>
