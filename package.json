@@ -1,0 +1,25 @@
+{
+  "name": "sixty4bit-dashboard",
+  "version": "1.0.0",
+  "description": "Sixty4Bit Dashboard with Neon PostgreSQL Database",
+  "main": "index-db.html",
+  "scripts": {
+    "build": "echo 'Build completed'",
+    "dev": "echo 'Development server'"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "dashboard",
+    "freelancer",
+    "postgresql",
+    "neon",
+    "netlify"
+  ],
+  "author": "Sixty4Bit",
+  "license": "MIT"
+}
